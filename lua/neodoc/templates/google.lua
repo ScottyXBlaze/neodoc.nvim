@@ -51,51 +51,66 @@
 --return M
 --
 
-
 local M = {}
 
 -- Parse parameters string into a table of parameters
+local function split_parameters(params_str)
+    local params = {}
+    local start = 1
+    local depth = 0
+
+    for index = 1, #params_str do
+        local char = params_str:sub(index, index)
+        if char == "[" or char == "(" or char == "{" then
+            depth = depth + 1
+        elseif char == "]" or char == ")" or char == "}" then
+            depth = math.max(depth - 1, 0)
+        elseif char == "," and depth == 0 then
+            table.insert(params, params_str:sub(start, index - 1))
+            start = index + 1
+        end
+    end
+
+    table.insert(params, params_str:sub(start))
+    return params
+end
+
 local function parse_parameters(params_str)
-    local debug_output = "Parameters to parse: "
-    
     if type(params_str) ~= "string" then
         vim.notify("Warning: Parameters are not in string format: " .. vim.inspect(params_str), vim.log.levels.WARN)
         return {}
     end
-    
+
     -- Handle nil or empty params
     if not params_str or params_str == "" then
         vim.notify("No parameters found", vim.log.levels.DEBUG)
         return {}
     end
-    
+
     --vim.notify("Parsing parameters: " .. params_str, vim.log.levels.DEBUG)
-    
+
     -- Remove parentheses and split by comma
     local params = {}
-    
+
     -- Remove parentheses safely
     local clean_params = params_str
-    
-    -- Only perform gsub if params_str is a valid string
-    if type(params_str) == "string" then
-        clean_params = params_str:gsub("^%(", ""):gsub("%)$", "")
-        
-        for param in clean_params:gmatch("[^,]+") do
-            local param_name, param_type = param:match("([%w_]+)%s*:%s*([^%s,]+)")
-            if not param_name then
-                param_name = param:match("([%w_]+)")
-                param_type = "Any"
-            end
-            if param_name then
-                table.insert(params, {
-                    name = param_name:match("^%s*(.-)%s*$"),
-                    type = param_type and param_type:match("^%s*(.-)%s*$") or "Any"
-                })
-            end
+
+    clean_params = clean_params:gsub("^%(", ""):gsub("%)$", "")
+
+    for _, param in ipairs(split_parameters(clean_params)) do
+        local param_name, param_type = param:match("^%s*([%w_]+)%s*:%s*(.-)%s*$")
+        if not param_name then
+            param_name = param:match("^%s*([%w_]+)")
+            param_type = "Any"
+        end
+        if param_name then
+            table.insert(params, {
+                name = param_name,
+                type = param_type or "Any",
+            })
         end
     end
-    
+
     --vim.notify("Found " .. #params .. " parameters", vim.log.levels.DEBUG)
     return params
 end
@@ -106,12 +121,12 @@ M.generate = function(func_data)
         vim.notify("Error: No function data provided", vim.log.levels.ERROR)
         return nil
     end
-    
+
     -- Debug logging
     --vim.notify("Generating docstring for: " .. (func_data.name or "unnamed function"), vim.log.levels.DEBUG)
-    
+
     local params = parse_parameters(func_data.params)
-    
+
     -- Build the docstring
     local lines = {
         '"""',
@@ -123,8 +138,7 @@ M.generate = function(func_data)
     if #params > 0 then
         table.insert(lines, "Args:")
         for _, param in ipairs(params) do
-            table.insert(lines, string.format("    %s (%s): Description of %s.", 
-                param.name, param.type, param.name))
+            table.insert(lines, string.format("    %s (%s): Description of %s.", param.name, param.type, param.name))
         end
         table.insert(lines, "")
     end
@@ -132,21 +146,16 @@ M.generate = function(func_data)
     -- Add Returns section
     table.insert(lines, "Returns:")
     if func_data.return_type and func_data.return_type ~= "None" then
-        table.insert(lines, string.format("    %s: Description of return value.", 
-            func_data.return_type))
+        table.insert(lines, string.format("    %s: Description of return value.", func_data.return_type))
     else
         table.insert(lines, "    None")
     end
-    
+
     -- Close docstring
     table.insert(lines, '"""')
-    
+
     -- Join all lines with proper indentation (no leading spaces)
     return table.concat(lines, "\n")
 end
 
 return M
-
-
-
-
