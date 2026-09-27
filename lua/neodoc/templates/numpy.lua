@@ -1,4 +1,5 @@
 local M = {}
+local utils = require("neodoc.utils")
 
 -- Parse parameters string into a table of parameters
 local function parse_parameters(params_str)
@@ -16,8 +17,8 @@ local function parse_parameters(params_str)
     
     local clean_params = params_str:gsub("^%(", ""):gsub("%)$", "")
     
-    for param in clean_params:gmatch("[^,]+") do
-        local param_name, param_type = param:match("([%w_]+)%s*:%s*([^%s,]+)")
+    for _, param in ipairs(utils.split_parameters(clean_params)) do
+        local param_name, param_type = param:match("^%s*([%w_]+)%s*:%s*(.-)%s*$")
         if not param_name then
             param_name = param:match("([%w_]+)")
             param_type = "Any"

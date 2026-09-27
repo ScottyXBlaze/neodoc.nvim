@@ -104,7 +104,7 @@ M.generate_docstring = function()
         end
         
         -- Extract return type if present
-        return_type = func_def:match("%->%s*(%w+)")
+        return_type = func_def:match("%->%s*(.-)%s*$")
     end
     
     -- Get the template

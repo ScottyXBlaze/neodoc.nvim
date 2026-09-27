@@ -1,5 +1,27 @@
 local M = {}
 
+-- Split a comma-separated list without splitting nested type expressions.
+function M.split_parameters(params_str)
+    local params = {}
+    local start = 1
+    local depth = 0
+
+    for index = 1, #params_str do
+        local char = params_str:sub(index, index)
+        if char == "[" or char == "(" or char == "{" then
+            depth = depth + 1
+        elseif char == "]" or char == ")" or char == "}" then
+            depth = math.max(depth - 1, 0)
+        elseif char == "," and depth == 0 then
+            table.insert(params, params_str:sub(start, index - 1))
+            start = index + 1
+        end
+    end
+
+    table.insert(params, params_str:sub(start))
+    return params
+end
+
 -- Function to check if a string is empty or nil
 function M.is_empty(str)
     return str == nil or str == ""

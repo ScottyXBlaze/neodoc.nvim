@@ -52,29 +52,9 @@
 --
 
 local M = {}
+local utils = require("neodoc.utils")
 
 -- Parse parameters string into a table of parameters
-local function split_parameters(params_str)
-    local params = {}
-    local start = 1
-    local depth = 0
-
-    for index = 1, #params_str do
-        local char = params_str:sub(index, index)
-        if char == "[" or char == "(" or char == "{" then
-            depth = depth + 1
-        elseif char == "]" or char == ")" or char == "}" then
-            depth = math.max(depth - 1, 0)
-        elseif char == "," and depth == 0 then
-            table.insert(params, params_str:sub(start, index - 1))
-            start = index + 1
-        end
-    end
-
-    table.insert(params, params_str:sub(start))
-    return params
-end
-
 local function parse_parameters(params_str)
     if type(params_str) ~= "string" then
         vim.notify("Warning: Parameters are not in string format: " .. vim.inspect(params_str), vim.log.levels.WARN)
@@ -97,7 +77,7 @@ local function parse_parameters(params_str)
 
     clean_params = clean_params:gsub("^%(", ""):gsub("%)$", "")
 
-    for _, param in ipairs(split_parameters(clean_params)) do
+    for _, param in ipairs(utils.split_parameters(clean_params)) do
         local param_name, param_type = param:match("^%s*([%w_]+)%s*:%s*(.-)%s*$")
         if not param_name then
             param_name = param:match("^%s*([%w_]+)")
