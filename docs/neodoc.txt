@@ -39,7 +39,7 @@ Rust               planned                  planned
 
 Using packer.nvim: >
     use {
-        'sunnytamang/neodoc.nvim',
+        'ScottyXBlaze/neodoc.nvim',
         config = function()
             require('neodoc').setup({
                 -- your configuration here
@@ -50,7 +50,7 @@ Using packer.nvim: >
 
 Using lazy.nvim: >
     {
-        'sunnytamang/neodoc.nvim',
+        'ScottyXBlaze/neodoc.nvim',
         config = function()
             require('neodoc').setup({
                 -- your configuration here
