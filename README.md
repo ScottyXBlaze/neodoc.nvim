@@ -34,7 +34,7 @@ https://github.com/user-attachments/assets/9126d21e-14ce-4292-abca-1c2ab9b15e81
 Using packer.nvim:
 ```lua
 use {
-    'sunnytamang/neodoc.nvim',
+    'ScottyXBlaze/neodoc.nvim',
     config = function()
         require('neodoc').setup({
             -- your configuration here
@@ -46,7 +46,7 @@ use {
 Using lazy.nvim:
 ```lua
 {
-    'sunnytamang/neodoc.nvim',
+    'ScottyXBlaze/neodoc.nvim',
     config = function()
         require('neodoc').setup({
             -- your configuration here
